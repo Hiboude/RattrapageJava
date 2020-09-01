@@ -13,6 +13,7 @@ import java.util.jar.JarFile;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.io.FileInputStream;
 
 public class MyClassLoader extends SecureClassLoader {
 	private ArrayList<File> path = null;
@@ -37,16 +38,18 @@ public class MyClassLoader extends SecureClassLoader {
         System.out.println("HEELOOOOO THERRREEEEEEE ---------------------------------------------------------");
         // System.out.println(name.substring(name.lastIndexOf(".")+1));
         File currentFile = path.get(0);
-        System.out.println(path.get(0).isDirectory());
-        System.out.println(currentFile);
+        System.out.println("CURRENT FILE NAME BLALBLBLABLBLABALBLBAL");
+        System.out.println(currentFile.getPath());
         System.out.println("TEST WITH GET CLASS");
+        System.out.println("NAMEEEE");
+        System.out.println(name);
         // System.out.println(path.get(1));
-        if(path.get(0).getName().endsWith(".jar")) return readJar(name.replace('.', '/'));
-        if(path.get(0).getName().endsWith(".zip")) System.out.println("ZZZZZZZZZZZZZIIIIIIIIIIIIIIIIIIIIIIIIPPPPPPPPPPP");
-        if(path.get(0).getName().endsWith(".zip")) return readZip(name.replace('.', '/'), currentFile);
-        if(path.get(0).isDirectory()) {
-            System.out.println(getChildFile(path.get(0)));
-        }
+        if(currentFile.getName().endsWith(".jar")) return readJar(name.replace('.', '/'), currentFile);
+        if(currentFile.getName().endsWith(".zip")) System.out.println("ZZZZZZZZZZZZZIIIIIIIIIIIIIIIIIIIIIIIIPPPPPPPPPPP");
+        if(currentFile.getName().endsWith(".zip")) return readZip(name.replace('.', '/'), currentFile);
+        if(currentFile.isDirectory()) return readDirectory(name, currentFile);
+        System.out.println("CURRENT FILE HERE");
+        System.out.println(currentFile.getPath());
         System.out.println("NAMEEEE");
         System.out.println(name);
         System.out.println(path.get(0).getName().substring(path.get(0).getName().lastIndexOf(".")+1));
@@ -71,12 +74,12 @@ public class MyClassLoader extends SecureClassLoader {
 	    if(f.isDirectory()) {
 	        return getChildFile(f.listFiles()[0]);
         }
-        return f;
+        return f.getParentFile();
     }
 
-    private byte[] readJar(String fileName) throws ClassNotFoundException {
+    private byte[] readJar(String fileName, File currentFile) throws ClassNotFoundException {
         try {
-            JarFile jar = new JarFile(path.get(0));
+            JarFile jar = new JarFile(currentFile);
             Enumeration<JarEntry> en = jar.entries();
             while (en.hasMoreElements()) {
                 JarEntry je = en.nextElement();
@@ -130,6 +133,29 @@ public class MyClassLoader extends SecureClassLoader {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        throw new ClassNotFoundException();
+    }
+    private byte[] readDirectory(String fileName, File currentFile) throws ClassNotFoundException {
+        String classPath = currentFile.getPath() + File.separatorChar + fileName.replace('.', File.separatorChar) + ".class";
+        System.out.println("**************************************************************************************************");
+        System.out.println(classPath);
+        File file = new File(classPath);
+        if(file.exists()) {
+            InputStream input = null;
+            try {
+                input = new FileInputStream(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int bufferSize = 4096;
+                byte[] buffer = new byte[bufferSize];
+                int bytesNumRead = 0;
+                while ((bytesNumRead = input.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesNumRead);
+                }
+                return baos.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         throw new ClassNotFoundException();
     }
