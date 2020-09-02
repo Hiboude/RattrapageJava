@@ -14,6 +14,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.io.FileInputStream;
+import java.util.regex.*;
 
 public class MyClassLoader extends SecureClassLoader {
 	private ArrayList<File> path = null;
@@ -34,25 +35,11 @@ public class MyClassLoader extends SecureClassLoader {
 	}
 
 	private byte[] loadClassData(String name) throws ClassNotFoundException, IOException {
-		// TODO A COMPLETER   Files.readAllBytes(Paths.get(name));
-        System.out.println("HEELOOOOO THERRREEEEEEE ---------------------------------------------------------");
-        // System.out.println(name.substring(name.lastIndexOf(".")+1));
         File currentFile = path.get(0);
-        System.out.println("CURRENT FILE NAME BLALBLBLABLBLABALBLBAL");
-        System.out.println(currentFile.getPath());
-        System.out.println("TEST WITH GET CLASS");
-        System.out.println("NAMEEEE");
-        System.out.println(name);
-        // System.out.println(path.get(1));
-        if(currentFile.getName().endsWith(".jar")) return readJar(name.replace('.', '/'), currentFile);
-        if(currentFile.getName().endsWith(".zip")) System.out.println("ZZZZZZZZZZZZZIIIIIIIIIIIIIIIIIIIIIIIIPPPPPPPPPPP");
-        if(currentFile.getName().endsWith(".zip")) return readZip(name.replace('.', '/'), currentFile);
+        // Regex pour match
+        if(currentFile.getName().endsWith(".jar") || currentFile.getName().endsWith(".xxxjar")) return readJar(name.replace('.', '/'), currentFile);
+        if(currentFile.getName().endsWith(".zip") || currentFile.getName().endsWith(".xxxzip")) return readZip(name.replace('.', '/'), currentFile);
         if(currentFile.isDirectory()) return readDirectory(name, currentFile);
-        System.out.println("CURRENT FILE HERE");
-        System.out.println(currentFile.getPath());
-        System.out.println("NAMEEEE");
-        System.out.println(name);
-        System.out.println(path.get(0).getName().substring(path.get(0).getName().lastIndexOf(".")+1));
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(
                 name.replace('.', File.separatorChar) + ".class");
         if(inputStream == null) throw new ClassNotFoundException();
@@ -138,8 +125,6 @@ public class MyClassLoader extends SecureClassLoader {
     }
     private byte[] readDirectory(String fileName, File currentFile) throws ClassNotFoundException {
         String classPath = currentFile.getPath() + File.separatorChar + fileName.replace('.', File.separatorChar) + ".class";
-        System.out.println("**************************************************************************************************");
-        System.out.println(classPath);
         File file = new File(classPath);
         if(file.exists()) {
             InputStream input = null;
